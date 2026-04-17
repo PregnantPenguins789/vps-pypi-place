@@ -1,0 +1,232 @@
+# vps-pypi-place — configuration
+# All components read from this file.
+# Paths are VPS deployment paths under /opt/vps-pypi-place/
+
+# ─────────────────────────────────────────────
+# INFRASTRUCTURE LAYOUT
+# ─────────────────────────────────────────────
+#
+# Oracle Always Free allocation:
+#
+#   ARM A1 (4 OCPU / 24 GB total — split into 2 VMs):
+#     node-test    2 OCPU / 12 GB  — watchdog, Docker test runner
+#     node-writer  2 OCPU / 12 GB  — writing_machine, broadcaster, LLM inference
+#
+#   x86 Micro (2 VMs, 1 OCPU / 1 GB each):
+#     node-web-01  nginx, static site, RSS feed
+#     node-web-02  spare / monitoring / reverse proxy
+#
+#   Object Storage: episode archive, session recordings, report backups
+#   Oracle Monitoring + Logging: system health, no custom log aggregation needed
+#
+# ARM64 Docker testing is native — no emulation penalty.
+# This is a data quality advantage over x86-only test environments.
+
+[project]
+name        = "vps-pypi-place"
+version     = "0.1.0"
+base_dir    = "/opt/vps-pypi-place"
+data_dir    = "/opt/vps-pypi-place/data"
+reports_dir = "/opt/vps-pypi-place/reports"
+episodes_dir = "/opt/vps-pypi-place/episodes"
+log_dir     = "/opt/vps-pypi-place/logs"
+site_dir    = "/opt/vps-pypi-place/site"
+
+[database]
+path = "/opt/vps-pypi-place/data/pypi_place.db"
+
+# ─────────────────────────────────────────────
+# NODES
+# ─────────────────────────────────────────────
+
+[nodes.test]
+role        = "watchdog"
+arch        = "arm64"
+ocpu        = 2
+ram_gb      = 12
+hostname    = ""            # fill in after Oracle provisioning
+internal_ip = ""            # Oracle VCN internal IP
+
+[nodes.writer]
+role        = "writer+broadcaster"
+arch        = "arm64"
+ocpu        = 2
+ram_gb      = 12
+hostname    = ""
+internal_ip = ""
+
+[nodes.web_01]
+role        = "webserver"
+arch        = "amd64"
+ocpu        = 1
+ram_gb      = 1
+hostname    = ""
+internal_ip = ""
+
+[nodes.web_02]
+role        = "spare"
+arch        = "amd64"
+ocpu        = 1
+ram_gb      = 1
+hostname    = ""
+internal_ip = ""
+
+# ─────────────────────────────────────────────
+# WATCHDOG
+# ─────────────────────────────────────────────
+
+[watchdog]
+rss_url              = "https://pypi.org/rss/updates.xml"
+poll_interval_hours  = 6
+batch_size           = 50               # packages per run
+install_timeout_sec  = 90
+record_probability   = 0.1             # fraction of PASSes recorded with asciinema
+
+# Cold isolation mode: fresh container per package (truth mode, slower)
+# Warm batch mode: persistent container per environment (faster, flags as warm)
+# cold_sample_rate: fraction of packages always tested cold regardless of mode
+default_isolation    = "warm"
+cold_sample_rate     = 0.05            # 5% always get cold isolation
+
+# ─────────────────────────────────────────────
+# TEST ENVIRONMENTS
+# ─────────────────────────────────────────────
+# Tested natively on ARM64 — no emulation.
+# arch field is informational (all arm64 on node-test).
+
+[[environments]]
+name    = "py311-slim"
+image   = "python:3.11-slim"
+arch    = "arm64"
+enabled = true
+
+[[environments]]
+name    = "py312-slim"
+image   = "python:3.12-slim"
+arch    = "arm64"
+enabled = true
+
+[[environments]]
+name    = "py313-slim"
+image   = "python:3.13-slim"
+arch    = "arm64"
+enabled = true
+
+[[environments]]
+name    = "py311-alpine"
+image   = "python:3.11-alpine"
+arch    = "arm64"
+enabled = true
+
+[[environments]]
+name    = "py312-alpine"
+image   = "python:3.12-alpine"
+arch    = "arm64"
+enabled = true
+
+# ─────────────────────────────────────────────
+# FOUR-PHASE TEST
+# ─────────────────────────────────────────────
+
+[phases]
+run_download = true     # pip download (resolution only)
+run_nodeps   = true     # pip install --no-deps (package integrity)
+run_full     = true     # pip install (full dependency graph)
+run_import   = true     # python -c "import X" (runtime viability)
+
+# Phases to skip if a prior phase fails
+# e.g. no point running full install if nodeps fails
+abort_on_download_fail = false  # metadata failure still lets us try
+abort_on_nodeps_fail   = true
+abort_on_full_fail     = true   # don't attempt import if install failed
+
+# ─────────────────────────────────────────────
+# WRITER
+# ─────────────────────────────────────────────
+
+[writer]
+writing_machine_dir     = "/opt/writing_machine"
+min_findings_to_write   = 5         # skip report generation if too little data
+max_report_words        = 800
+findings_lookback_hours = 24        # writer pulls findings from last N hours
+
+# Severity weighting for report focus
+# Writer leads with critical/significant, buries info
+severity_lead   = ["critical", "significant"]
+severity_body   = ["notable"]
+severity_footer = ["info"]
+
+# ─────────────────────────────────────────────
+# BROADCASTER
+# ─────────────────────────────────────────────
+
+[broadcaster]
+broadcast_time      = "22:30"           # render starts here, publishes at 23:00
+pov_scene           = "broadcaster/pov/head.pov"
+pov_width           = 320
+pov_height          = 240
+pov_frames          = 120
+tts_model           = "en_US-lessac-medium"
+tracker_file        = "broadcaster/audio/theme.mod"
+output_format       = "mp4"
+episode_max_sec     = 120               # cap at 2 minutes
+ascii_mode          = true              # render terminal/aalib version alongside mp4
+
+# ffmpeg output settings — period-appropriate quality
+video_codec         = "libx264"
+video_bitrate       = "400k"
+audio_codec         = "libmp3lame"
+audio_bitrate       = "96k"
+framerate           = 15                # lower = more period-authentic
+
+# ─────────────────────────────────────────────
+# OBJECT STORAGE
+# ─────────────────────────────────────────────
+
+[object_storage]
+# Oracle Cloud Object Storage — S3-compatible, 20 GB free
+enabled         = false         # set true once Oracle namespace configured
+namespace       = ""            # fill after Oracle setup
+bucket_episodes = "pypi-place-episodes"
+bucket_sessions = "pypi-place-sessions"
+bucket_reports  = "pypi-place-reports"
+region          = ""            # e.g. "us-ashburn-1"
+
+# Local fallback when object storage disabled
+local_episode_archive = "/opt/vps-pypi-place/episodes"
+local_session_archive = "/opt/vps-pypi-place/data/sessions"
+
+# ─────────────────────────────────────────────
+# SITE
+# ─────────────────────────────────────────────
+
+[site]
+base_url            = ""                # fill in once IP/domain known
+rss_title           = "The PyPI Place — Daily Broadcast"
+rss_description     = "Machine-generated honest assessment of the Python package ecosystem. No speculation beyond what the data shows."
+episodes_to_keep    = 30               # rolling window
+served_by           = "node-web-01"    # x86 micro running nginx
+
+# ─────────────────────────────────────────────
+# SCHEDULER
+# ─────────────────────────────────────────────
+
+[scheduler]
+# systemd OnCalendar format
+# Staggered to keep CPU above Oracle's 20th-percentile idle threshold
+watchdog_schedule   = "*-*-* 00,06,12,18:00:00"
+writer_schedule     = "*-*-* 20:00:00"
+broadcast_schedule  = "*-*-* 22:30:00"
+site_schedule       = "*-*-* 23:15:00"
+archiver_schedule   = "*-*-* 03:00:00"     # push to object storage
+
+# ─────────────────────────────────────────────
+# LOGGING
+# ─────────────────────────────────────────────
+
+[logging]
+level           = "INFO"        # DEBUG | INFO | WARNING | ERROR
+max_bytes       = 5242880       # 5 MB per log file
+backup_count    = 3
+# Oracle Cloud Logging integration (free tier)
+oracle_logging  = false         # set true once OCID configured
