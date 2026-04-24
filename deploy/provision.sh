@@ -15,11 +15,14 @@ set -euo pipefail
 
 INSTANCE_NAME="pypi-place-node-test"
 SSH_KEY_FILE="$HOME/.ssh/id_ed25519.pub"
+# Optional: OCID of the compartment to create resources in.
+# Leave blank to use the root (tenancy) compartment.
+COMPARTMENT_ID="${COMPARTMENT_ID:-}"
 
 # Leave these unless you know what you're doing
 SHAPE="VM.Standard.A1.Flex"
-OCPUS=4
-RAM_GB=24
+OCPUS=2
+RAM_GB=12
 IMAGE_OS="Canonical Ubuntu"
 IMAGE_OS_VERSION="22.04"
 REGION="us-ashburn-1"
@@ -34,6 +37,7 @@ SUBNET_NAME="pypi-place-subnet"
 
 info() { echo "[INFO]  $*"; }
 ok()   { echo "[OK]    $*"; }
+warn() { echo "[WARN]  $*"; }
 die()  { echo "[ERROR] $*" >&2; exit 1; }
 
 require() { command -v "$1" &>/dev/null || die "$1 not found. Run: bash deploy/install_oci_cli.sh"; }
@@ -59,9 +63,7 @@ TENANCY_ID=$(oci iam tenancy get --tenancy-id \
     oci iam compartment list --compartment-id-in-subtree true \
     --access-level ACCESSIBLE --query 'data[0]."compartment-id"' --raw-output)
 
-COMPARTMENT_ID=$(oci iam compartment list \
-    --compartment-id "$TENANCY_ID" \
-    --query 'data[0].id' --raw-output 2>/dev/null || echo "$TENANCY_ID")
+COMPARTMENT_ID="${COMPARTMENT_ID:-$TENANCY_ID}"
 
 ok "Using compartment: $COMPARTMENT_ID"
 
@@ -164,19 +166,34 @@ ok "Image: $IMAGE_ID"
 # ─────────────────────────────────────────────
 
 info "Launching ARM instance (this takes 2-3 minutes)..."
-SSH_KEY=$(cat "$SSH_KEY_FILE")
 
-INSTANCE_ID=$(oci compute instance launch \
+mapfile -t AD_LIST < <(oci iam availability-domain list \
     --compartment-id "$COMPARTMENT_ID" \
-    --display-name "$INSTANCE_NAME" \
-    --image-id "$IMAGE_ID" \
-    --shape "$SHAPE" \
-    --shape-config "{\"ocpus\":$OCPUS,\"memoryInGBs\":$RAM_GB}" \
-    --subnet-id "$SUBNET_ID" \
-    --assign-public-ip true \
-    --ssh-authorized-keys-file "$SSH_KEY_FILE" \
-    --wait-for-state RUNNING \
-    --query 'data.id' --raw-output)
+    --query 'data[].name' --raw-output | grep -oP 'Zmma:US-ASHBURN-AD-\d')
+
+# Try AD-2 and AD-3 before AD-1 (AD-1 is most saturated)
+SORTED_ADS=($(printf '%s\n' "${AD_LIST[@]}" | sort -t- -k4 -r))
+
+INSTANCE_ID=""
+for AD in "${SORTED_ADS[@]}"; do
+    info "Trying availability domain: $AD"
+    INSTANCE_ID=$(oci compute instance launch \
+        --compartment-id "$COMPARTMENT_ID" \
+        --availability-domain "$AD" \
+        --display-name "$INSTANCE_NAME" \
+        --image-id "$IMAGE_ID" \
+        --shape "$SHAPE" \
+        --shape-config "{\"ocpus\":$OCPUS,\"memoryInGBs\":$RAM_GB}" \
+        --subnet-id "$SUBNET_ID" \
+        --assign-public-ip true \
+        --ssh-authorized-keys-file "$SSH_KEY_FILE" \
+        --wait-for-state RUNNING \
+        --query 'data.id' --raw-output 2>&1) && break
+    warn "AD $AD failed: $INSTANCE_ID"
+    INSTANCE_ID=""
+done
+
+[ -n "$INSTANCE_ID" ] || die "All availability domains exhausted. Try again later or reduce OCPUS/RAM_GB further."
 ok "Instance running: $INSTANCE_ID"
 
 # ─────────────────────────────────────────────

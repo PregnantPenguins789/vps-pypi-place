@@ -1,0 +1,13 @@
+[Unit]
+Description=The PyPI Place watchdog (RSS poller + test runner)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=pypi
+Group=pypi
+WorkingDirectory=/opt/vps-pypi-place
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/vps-pypi-place/venv/bin/python -m watchdog.run
+

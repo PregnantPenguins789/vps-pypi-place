@@ -1,0 +1,12 @@
+[Unit]
+Description=Run The PyPI Place watchdog periodically
+
+[Timer]
+OnCalendar=*-*-* 00,06,12,18:00:00
+Persistent=true
+RandomizedDelaySec=2m
+Unit=pypi-watchdog.service
+
+[Install]
+WantedBy=timers.target
+

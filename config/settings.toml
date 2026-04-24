@@ -31,6 +31,7 @@ reports_dir = "/opt/vps-pypi-place/reports"
 episodes_dir = "/opt/vps-pypi-place/episodes"
 log_dir     = "/opt/vps-pypi-place/logs"
 site_dir    = "/opt/vps-pypi-place/site"
+outbox_dir  = "/opt/vps-pypi-place/data/outbox"
 
 [database]
 path = "/opt/vps-pypi-place/data/pypi_place.db"

@@ -1,4 +1,7 @@
-import tomllib
+try:
+    import tomllib  # py>=3.11
+except ModuleNotFoundError:  # pragma: no cover
+    import tomli as tomllib  # py<3.11
 from pathlib import Path
 
 _CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.toml"
