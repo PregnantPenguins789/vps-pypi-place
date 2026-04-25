@@ -70,7 +70,7 @@ ok "Directories created."
 # CLONE REPO
 # ─────────────────────────────────────────────
 
-if [ ! -d /opt/vps-pypi-place/.git ]; then
+if [ ! -d /opt/vps-pypi-place/repo/.git ]; then
     info "Cloning repository..."
     git clone https://github.com/PregnantPenguins789/vps-pypi-place.git /opt/vps-pypi-place/repo
     ok "Repo cloned to /opt/vps-pypi-place/repo"
