@@ -202,7 +202,7 @@ local_session_archive = "/opt/vps-pypi-place/data/sessions"
 # ─────────────────────────────────────────────
 
 [site]
-base_url            = ""                # fill in once IP/domain known
+base_url            = "http://sovereignmail.org/pypiplace"
 rss_title           = "The PyPI Place — Daily Broadcast"
 rss_description     = "Machine-generated honest assessment of the Python package ecosystem. No speculation beyond what the data shows."
 episodes_to_keep    = 30               # rolling window

@@ -7,7 +7,8 @@ After=network-online.target docker.service
 Type=oneshot
 User=ubuntu
 Group=ubuntu
-WorkingDirectory=/opt/vps-pypi-place/repo
+WorkingDirectory=/opt/vps-pypi-place
 Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/opt/vps-pypi-place
 ExecStart=/opt/vps-pypi-place/venv/bin/python -m watchdog.run
-
+ExecStartPost=/opt/vps-pypi-place/venv/bin/python /opt/vps-pypi-place/site/build.py
