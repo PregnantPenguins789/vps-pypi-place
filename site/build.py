@@ -235,24 +235,24 @@ def _jlist(raw):
 
 _CSS = """
     :root {
-        --bg: #0a0a0a;
-        --bg2: #111111;
+        --bg: #0d1a10;
+        --bg2: #162018;
         --bg3: #181818;
         --green: #00ff41;
-        --green-dim: #00aa2a;
+        --green-dim: #52b788;
         --green-dark: #003d0f;
         --amber: #ffb300;
         --amber-dim: #cc8800;
         --red: #ff3131;
         --blue: #00cfff;
         --blue-dim: #007799;
-        --white: #e8e8e8;
-        --grey: #555;
-        --grey-light: #888;
-        --scan: rgba(0,255,65,0.03);
-        --font-mono: 'IBM Plex Mono', 'Courier New', Courier, monospace;
-        --font-display: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
-        --font-term: 'Share Tech Mono', 'Lucida Console', monospace;
+        --white: #e8f0e9;
+        --grey: #8aab8e;
+        --grey-light: #9ab89e;
+        --scan: rgba(0,255,65,0.015);
+        --font-mono: 'IBM Plex Mono', 'Cascadia Code', 'Fira Mono', 'Courier New', Courier, monospace;
+        --font-display: Impact, 'Arial Narrow', sans-serif;
+        --font-term: 'Lucida Console', 'Courier New', Courier, monospace;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -337,7 +337,7 @@ _CSS = """
     }
     .card {
         background: var(--bg2);
-        border: 1px solid #222;
+        border: 1px solid #253528;
         padding: 1.2rem;
         position: relative;
         transition: border-color 0.3s;
@@ -400,7 +400,7 @@ _CSS = """
 
     .terminal {
         background: #050505;
-        border: 1px solid #1e1e1e;
+        border: 1px solid #253528;
         padding: 1rem;
         font-family: var(--font-term);
         font-size: 0.75rem;
@@ -498,7 +498,7 @@ _CSS = """
         flex-wrap: wrap;
         gap: 1rem;
         font-size: 0.7rem;
-        color: var(--grey);
+        color: #7aaa7e;
         margin-top: 2rem;
     }
     footer a { color: var(--green-dim); text-decoration: none; }
@@ -717,9 +717,6 @@ def render(d: dict) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="refresh" content="300">
 <title>The PyPI Place — Live Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 {_CSS}
 </style>

@@ -120,6 +120,25 @@ This constraint is intentional. The aesthetic is the argument.
 - SQLite is the only database
 - No external APIs, no cloud services beyond free-tier compute
 
+## HTML / Frontend Rules
+
+**No external resource loading.** All HTML pages must be fully self-contained.
+
+Prohibited without exception:
+- Google Fonts (`fonts.googleapis.com`, `fonts.gstatic.com`)
+- Any CDN-hosted fonts, icon sets, or stylesheets (Font Awesome, Bootstrap, Tailwind CDN, etc.)
+- Any CDN-hosted JavaScript (jQuery CDN, analytics snippets, tracking pixels, etc.)
+- `<link rel="preconnect">` or `<link rel="dns-prefetch">` to third-party domains
+
+Allowed:
+- System font stacks — IBM Plex Mono, Cascadia Code, Fira Mono, Courier New, etc.
+- Inline `<style>` blocks
+- Inline or file-local `<script>` blocks
+- Assets served from the same origin
+
+If a font is wanted, use a system fallback stack. The page must render correctly with
+zero network requests beyond the HTML file itself.
+
 ## Current Status
 
 Project initialized. Schema and foundation in progress.
