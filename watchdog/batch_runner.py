@@ -8,6 +8,9 @@ For each environment:
   - Classify failures and detect asymmetries after each release is complete
 """
 
+import hashlib
+import json
+import os
 import subprocess
 import logging
 import random
@@ -239,6 +242,40 @@ def _test_package(container_id: str, release: dict, env: dict,
     }
 
 
+def _write_outbox(result: dict, release: dict):
+    """Emit a yggcrawl-compatible record to the outbox directory."""
+    outbox_dir = get("watchdog").get("outbox_dir", "/opt/vps-pypi-place/data/outbox")
+    os.makedirs(outbox_dir, exist_ok=True)
+
+    package     = release["package"]
+    version     = release["version"]
+    environment = result["environment"]
+    status      = result["status"]
+    observed_at = int(time.time())
+
+    deterministic = f"pypi_test_result|{package}|{version}|{environment}|{status}"
+    result_hash   = hashlib.sha256(deterministic.encode()).hexdigest()
+
+    record = {
+        "kind":        "pypi_test_result",
+        "package":     package,
+        "version":     version,
+        "environment": environment,
+        "result":      status,
+        "observed_at": observed_at,
+        "result_hash": result_hash,
+    }
+
+    filename = f"{package}_{version}_{environment}_{observed_at}_{result_hash[:8]}.json"
+    safe_name = filename.replace("/", "_").replace("\\", "_")
+    tmp_path  = os.path.join(outbox_dir, safe_name + ".tmp")
+    dst_path  = os.path.join(outbox_dir, safe_name)
+
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(record, f)
+    os.replace(tmp_path, dst_path)
+
+
 def _write_result(result: dict):
     with db.transaction() as conn:
         conn.execute("""
@@ -319,6 +356,7 @@ def run_batch(releases: list[dict]):
                         container, release, env, isolation, phase_cfg, cfg
                     )
                     _write_result(result)
+                    _write_outbox(result, release)
                 finally:
                     if use_cold and cold_container:
                         _docker_stop(cold_container)
