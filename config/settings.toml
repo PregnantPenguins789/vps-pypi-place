@@ -96,6 +96,12 @@ cold_sample_rate     = 0.05            # 5% always get cold isolation
 # arch field is informational (all arm64 on node-test).
 
 [[environments]]
+name    = "py39-slim"
+image   = "python:3.9-slim"
+arch    = "arm64"
+enabled = true
+
+[[environments]]
 name    = "py311-slim"
 image   = "python:3.11-slim"
 arch    = "arm64"
@@ -111,19 +117,19 @@ enabled = true
 name    = "py313-slim"
 image   = "python:3.13-slim"
 arch    = "arm64"
-enabled = true
+enabled = false
 
 [[environments]]
 name    = "py311-alpine"
 image   = "python:3.11-alpine"
 arch    = "arm64"
-enabled = true
+enabled = false
 
 [[environments]]
 name    = "py312-alpine"
 image   = "python:3.12-alpine"
 arch    = "arm64"
-enabled = true
+enabled = false
 
 # ─────────────────────────────────────────────
 # FOUR-PHASE TEST
