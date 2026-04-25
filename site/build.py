@@ -745,7 +745,10 @@ def render(d: dict) -> str:
 <header>
   <div class="header-top">
     <div class="logo">The PyPI Place<span>A Place for PyPI</span></div>
-    <div class="tagline">⚠ Dangerously Educational</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.6rem">
+      <div class="tagline">⚠ Dangerously Educational</div>
+      <a href="/pypiplace/about.html" style="color:var(--green);font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.2em;text-decoration:none;border:1px solid var(--green-dim);padding:0.3rem 0.8rem;">LEARN MORE →</a>
+    </div>
   </div>
   <div class="header-meta">
     <div>STATUS: <span style="color:{status_clr}">{status_lbl}</span></div>
