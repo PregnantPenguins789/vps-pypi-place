@@ -33,41 +33,46 @@
 
   /* ── Header ── */
   header {
-    border-bottom: 1px solid var(--border);
-    padding: 3rem 2rem 2rem;
-    text-align: center;
+    border-bottom: 1px solid var(--green-dim);
+    padding: 2rem 2rem 1.5rem;
+    background: linear-gradient(180deg, #001a05 0%, transparent 100%);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
   .logo {
-    font-size: clamp(2rem, 8vw, 4.5rem);
+    font-family: Impact, 'Arial Narrow', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
     color: var(--green);
-    letter-spacing: 0.08em;
-    text-shadow: 0 0 24px rgba(57,255,20,0.45);
-    font-weight: normal;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 20px var(--green), 0 0 60px rgba(57,255,20,0.3);
+    line-height: 0.9;
   }
 
-  .logo-sub {
-    font-size: 0.85rem;
-    color: var(--muted);
-    letter-spacing: 0.25em;
+  .logo span {
+    display: block;
+    font-size: 0.35em;
+    color: var(--amber);
+    letter-spacing: 0.3em;
+    text-shadow: 0 0 10px var(--amber);
+    margin-top: 0.3em;
+    font-family: var(--font);
+  }
+
+  .tagline {
+    color: var(--amber);
+    font-size: 0.9rem;
+    border: 1px solid var(--amber);
+    padding: 0.4rem 0.8rem;
     text-transform: uppercase;
-    margin-top: 0.4rem;
-  }
-
-  .status-bar {
-    display: inline-flex;
-    gap: 2rem;
-    margin-top: 1.5rem;
-    padding: 0.5rem 1.25rem;
-    border: 1px solid var(--border);
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-  }
-
-  .status-bar .live {
-    color: var(--green);
-    animation: blink 1.4s step-end infinite;
+    letter-spacing: 0.15em;
+    align-self: flex-end;
   }
 
   @keyframes blink {
@@ -296,13 +301,9 @@
 <body>
 
 <header>
-  <div class="logo">About THE PyPI Place</div>
-  <div class="logo-sub">sovereign package intelligence — free infrastructure — open data</div>
-  <div class="status-bar">
-    <span class="live">● LIVE</span>
-    <span>ORACLE ARM A1</span>
-    <span>py3.9 / py3.11 / py3.12</span>
-    <span>sovereignmail.org/pypiplace</span>
+  <div class="header-top">
+    <div class="logo">The PyPI Place<span>About</span></div>
+    <div class="tagline">⚠ Dangerously Educational</div>
   </div>
 </header>
 

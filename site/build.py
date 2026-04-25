@@ -504,6 +504,25 @@ _CSS = """
     footer a { color: var(--green-dim); text-decoration: none; }
     footer a:hover { color: var(--green); }
 
+    .sitenav {
+        display: flex;
+        justify-content: flex-end;
+        border-bottom: 1px solid var(--green-dark);
+        font-size: 0.75rem;
+        letter-spacing: 0.15em;
+        font-family: var(--font-mono);
+    }
+    .sitenav a {
+        padding: 0.55rem 1.4rem;
+        color: var(--grey-light);
+        text-decoration: none;
+        border-left: 1px solid var(--green-dark);
+        transition: color 0.15s, background 0.15s;
+    }
+    .sitenav a:hover { color: var(--green); background: rgba(0,255,65,0.04); }
+    .sitenav a.about { color: var(--amber); }
+    .sitenav a.about:hover { color: var(--green); }
+
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--green-dark); }
@@ -738,6 +757,11 @@ def render(d: dict) -> str:
   </div>
 </header>
 
+<nav class="sitenav">
+  <a href="/pypiplace/">LIVE DASHBOARD</a>
+  <a href="/pypiplace/about.html" class="about">ABOUT THIS PROJECT</a>
+</nav>
+
 <main>
 
   <!-- ── stats + env health + today's batch ── -->
@@ -857,6 +881,7 @@ def render(d: dict) -> str:
   </div>
   <div>generated {d['generated_at']}</div>
 </footer>
+
 
 </body>
 </html>
