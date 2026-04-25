@@ -38,7 +38,11 @@ def main():
         log.info("No new releases found. Done.")
         return
 
-    # Test them
+    batch_size = get("watchdog").get("batch_size", 50)
+    if len(new_releases) > batch_size:
+        log.info("Capping batch at %d (found %d new releases)", batch_size, len(new_releases))
+        new_releases = new_releases[:batch_size]
+
     batch_runner.run_batch(new_releases)
 
     log.info("=== watchdog done ===")
