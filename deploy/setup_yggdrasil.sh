@@ -23,19 +23,17 @@ SERVICE_USER="ubuntu"
 if command -v yggdrasil &>/dev/null; then
     ok "Yggdrasil already installed."
 else
-    info "Installing Yggdrasil..."
-    sudo apt-get install -y curl gpg
-
-    curl -fsSL https://neilalexander.s3.dualstack.eu-west-2.amazonaws.com/deb/key.gpg \
-        | sudo gpg --dearmor -o /usr/share/keyrings/yggdrasil-keyring.gpg
-
-    echo "deb [signed-by=/usr/share/keyrings/yggdrasil-keyring.gpg] \
-https://neilalexander.s3.dualstack.eu-west-2.amazonaws.com/deb/ debian edgy main" \
-        | sudo tee /etc/apt/sources.list.d/yggdrasil.list
-
-    sudo apt-get update -qq
-    sudo apt-get install -y yggdrasil
-    ok "Yggdrasil installed."
+    info "Installing Yggdrasil from GitHub releases..."
+    ARCH=$(dpkg --print-architecture)   # amd64 or arm64
+    LATEST=$(curl -fsSL https://api.github.com/repos/yggdrasil-network/yggdrasil-go/releases/latest \
+        | grep '"tag_name"' | head -1 | cut -d'"' -f4)
+    VERSION=${LATEST#v}
+    DEB_URL="https://github.com/yggdrasil-network/yggdrasil-go/releases/download/${LATEST}/yggdrasil-${VERSION}-${ARCH}.deb"
+    info "Downloading ${DEB_URL}..."
+    curl -fsSL -o /tmp/yggdrasil.deb "$DEB_URL"
+    sudo dpkg -i /tmp/yggdrasil.deb
+    rm -f /tmp/yggdrasil.deb
+    ok "Yggdrasil ${LATEST} installed."
 fi
 
 # ─────────────────────────────────────────────
