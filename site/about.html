@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The PyPI Place — About</title>
+<style>
+  :root {
+    --bg:        #0a0a0a;
+    --surface:   #111111;
+    --border:    #1e3a1e;
+    --green:     #39ff14;
+    --green-dim: #1a7a00;
+    --amber:     #ffb300;
+    --white:     #d4d4d4;
+    --muted:     #5a5a5a;
+    --red:       #ff4444;
+    --font:      'Courier New', Courier, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.75;
+    padding: 0 0 6rem;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+  }
+
+  .logo {
+    font-size: clamp(2rem, 8vw, 4.5rem);
+    color: var(--green);
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 24px rgba(57,255,20,0.45);
+    font-weight: normal;
+  }
+
+  .logo-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+  }
+
+  .status-bar {
+    display: inline-flex;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .status-bar .live {
+    color: var(--green);
+    animation: blink 1.4s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.15; }
+  }
+
+  /* ── Nav ── */
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+  }
+
+  nav a {
+    padding: 0.65rem 1.4rem;
+    color: var(--muted);
+    text-decoration: none;
+    border-right: 1px solid var(--border);
+    transition: color 0.15s, background 0.15s;
+  }
+
+  nav a:hover { color: var(--green); background: rgba(57,255,20,0.04); }
+
+  /* ── Layout ── */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* ── Sections ── */
+  section {
+    padding: 3.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-size: 0.7rem;
+    color: var(--green-dim);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    color: var(--green);
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1rem;
+    color: var(--amber);
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    margin: 2rem 0 0.75rem;
+  }
+
+  p {
+    color: var(--white);
+    margin-bottom: 1.1rem;
+    max-width: 70ch;
+  }
+
+  p.wide { max-width: 100%; }
+
+  /* ── Pull quote / callout ── */
+  .callout {
+    border-left: 3px solid var(--green);
+    padding: 0.75rem 1.25rem;
+    margin: 1.75rem 0;
+    background: rgba(57,255,20,0.03);
+    color: var(--green);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .callout.amber {
+    border-left-color: var(--amber);
+    color: var(--amber);
+    background: rgba(255,179,0,0.03);
+  }
+
+  /* ── Terminal block ── */
+  .terminal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: var(--green-dim);
+  }
+
+  .terminal .prompt { color: var(--green); }
+  .terminal .comment { color: var(--muted); }
+  .terminal .key { color: var(--amber); }
+  .terminal .val { color: var(--white); }
+  .terminal .pass { color: var(--green); }
+  .terminal .fail { color: var(--red); }
+
+  /* ── Cost table ── */
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 1.5rem 0;
+  }
+
+  .cost-table th {
+    text-align: left;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    padding: 0.4rem 0.75rem;
+    font-weight: normal;
+  }
+
+  .cost-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .cost-table tr:last-child td { border-bottom: none; }
+
+  .cost-table .layer { color: var(--amber); }
+  .cost-table .then  { color: var(--muted); }
+  .cost-table .now   { color: var(--green); }
+
+  /* ── Architecture diagram ── */
+  .arch-flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 0.8rem;
+    line-height: 2;
+    color: var(--muted);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* ── Component cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+
+  .card {
+    background: var(--surface);
+    padding: 1.25rem;
+  }
+
+  .card-title {
+    color: var(--green);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+  }
+
+  .card p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0;
+    max-width: 100%;
+  }
+
+  /* ── Env matrix ── */
+  .env-matrix {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 1.5rem 0;
+    font-size: 0.78rem;
+  }
+
+  .env-cell {
+    background: var(--surface);
+    padding: 0.75rem 1rem;
+    text-align: center;
+  }
+
+  .env-cell .version { color: var(--green); font-size: 1rem; }
+  .env-cell .image   { color: var(--muted); font-size: 0.72rem; margin-top: 0.2rem; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    border-top: 1px solid var(--border);
+  }
+
+  footer a { color: var(--green-dim); text-decoration: none; }
+  footer a:hover { color: var(--green); }
+
+  /* ── Responsive ── */
+  @media (max-width: 540px) {
+    .env-matrix { grid-template-columns: 1fr; }
+    .status-bar { gap: 1rem; font-size: 0.7rem; }
+    nav a { padding: 0.5rem 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">THE PyPI PLACE</div>
+  <div class="logo-sub">sovereign package intelligence — free infrastructure — open data</div>
+  <div class="status-bar">
+    <span class="live">● LIVE</span>
+    <span>ORACLE ARM A1</span>
+    <span>py3.9 / py3.11 / py3.12</span>
+    <span>sovereignmail.org/pypiplace</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#what-it-is">WHAT IT IS</a>
+  <a href="#the-dataset">THE DATASET</a>
+  <a href="#origin">ORIGIN</a>
+  <a href="#2006">2006 PRICE TAG</a>
+  <a href="#argument">THE ARGUMENT</a>
+  <a href="#yggcrawl">YGGCRAWL</a>
+  <a href="#architecture">ARCHITECTURE</a>
+</nav>
+
+<main>
+
+  <!-- ── WHAT IT IS ── -->
+  <section id="what-it-is">
+    <div class="section-label">00 — overview</div>
+    <h2>What The PyPI Place Is</h2>
+
+    <p>
+      <strong style="color:var(--green)">The PyPI Place (PPP)</strong> is a very creatively named,
+      live and continuously running watchdog that tests whether Python packages from The Python Package
+      Index actually install and function across multiple environments.
+    </p>
+
+    <p>
+      PyPI is the repository of software for the Python programming language — it's how the community
+      finds, installs, and shares code. Over 760,000 packages live there, added by anyone, with no
+      quality floor by design.
+    </p>
+
+    <p>
+      PPP operates on a free-tier Oracle ARM instance. It pulls every new package release, attempts
+      installs across Python 3.9, 3.11, and 3.12 on both slim Debian and Alpine Linux containers,
+      and publishes the results openly in real time.
+    </p>
+
+    <div class="callout">
+      The project exists because — by design — PyPI has no quality floor.
+    </div>
+
+    <div class="env-matrix">
+      <div class="env-cell">
+        <div class="version">3.9</div>
+        <div class="image">python:3.9-slim</div>
+      </div>
+      <div class="env-cell">
+        <div class="version">3.11</div>
+        <div class="image">python:3.11-slim</div>
+      </div>
+      <div class="env-cell">
+        <div class="version">3.12</div>
+        <div class="image">python:3.12-slim</div>
+      </div>
+    </div>
+
+    <p>
+      Each new release runs through a four-phase test: dependency resolution, no-dependency install,
+      full install, and an import check. Every result is timestamped, structured, and published. Nothing
+      is discarded.
+    </p>
+  </section>
+
+  <!-- ── THE DATASET ── -->
+  <section id="the-dataset">
+    <div class="section-label">01 — data</div>
+    <h2>The Dataset</h2>
+
+    <p>
+      Every test run generates structured, timestamped records of exactly which packages install
+      successfully across which Python versions and Linux distributions. Over time this creates a
+      longitudinal picture of the PyPI environment.
+    </p>
+
+    <div class="terminal">
+<span class="comment"># example test result record</span>
+{
+  <span class="key">"package"</span>:     <span class="val">"example-lib"</span>,
+  <span class="key">"version"</span>:     <span class="val">"2.1.0"</span>,
+  <span class="key">"environment"</span>: <span class="val">"py312-slim"</span>,
+  <span class="key">"result"</span>:      <span class="pass">"PASS"</span>,        <span class="comment"># or FAIL / TIMEOUT</span>
+  <span class="key">"phase_download"</span>: <span class="pass">"PASS"</span>,
+  <span class="key">"phase_nodeps"</span>:  <span class="pass">"PASS"</span>,
+  <span class="key">"phase_full"</span>:    <span class="pass">"PASS"</span>,
+  <span class="key">"phase_import"</span>:  <span class="pass">"PASS"</span>,
+  <span class="key">"observed_at"</span>:  <span class="val">1714000000</span>
+}
+    </div>
+
+    <p>
+      The dataset surfaces several distinct failure categories:
+    </p>
+
+    <h3>Alpine failures</h3>
+    <p>Packages that break on Alpine due to missing system libraries — a very common failure mode
+    that surprises teams moving to slim container images in CI.</p>
+
+    <h3>Version deprecation failures</h3>
+    <p>Packages that fail silently on Python 3.12 or 3.13 due to deprecated APIs — often
+    packages that claim compatibility they don't actually have.</p>
+
+    <h3>Phantom successes</h3>
+    <p>Packages that install but cannot be imported. The install log is green. The runtime is
+    broken. This category alone surfaces packages that would waste hours of developer time.</p>
+
+    <div class="callout amber">
+      For anyone managing dependencies, building Docker images, or trying to understand why a CI
+      pipeline fails on one environment but not another — this cross-environment install matrix
+      is the reference that doesn't exist anywhere else.
+    </div>
+
+    <p>
+      As the dataset grows it becomes possible to answer questions that have no good answer today:
+      which packages have never successfully installed on Alpine? Which dependency chains are
+      structurally broken across Python versions — with real empirical test results, not
+      self-reported metadata?
+    </p>
+  </section>
+
+  <!-- ── ORIGIN ── -->
+  <section id="origin">
+    <div class="section-label">02 — origin</div>
+    <h2>Where This Comes From</h2>
+
+    <p>
+      PyPI launched in 2003, over 20 years ago. It was bare-bones for a long time — the modern
+      infrastructure with proper APIs and verified downloads came much later, around 2018-2019
+      with the Warehouse rewrite.
+    </p>
+
+    <p>
+      Twenty years ago I was aware of PyPI, but only vaguely. I "worked with computers" — meaning
+      I maintained a retail website for a living, with a total of about two years of university
+      credits from four different colleges in three different states. I suppose I thought I had
+      better things to do, or at least assumed I should have something better to do and better
+      find it.
+    </p>
+
+    <p>
+      For two of those semesters I was majoring in computer science, which is just enough time to
+      realize that although programming in C is fun, the way it was being taught was so divorced
+      from any application in the real world that it was all going in one ear and out the other.
+      I picked up a few concepts by rote and through osmosis — and more by regularly editing
+      JavaScript files, copy-pasting SQL, wrangling PHP. Oh, and a lot of wasted time with
+      ActionScript and flipping through C++ books about "making apps" that never actually showed
+      how to make apps. No software developer, me.
+    </p>
+
+    <p>
+      But I certainly knew I'd be as capable as any recent grad at being put to work on a
+      corporate project. I went to high school with many people paid six-figure salaries in their
+      twenties to be "put on projects" — tasked with what amounted often to data entry. Many of
+      them have millions of dollars now.
+    </p>
+
+    <p>
+      Did I mention I was getting paid eight dollars an hour under the table to run that retail
+      website, run the marketing department, design the pages, and troubleshoot the backend? The
+      "office" was down two very long sets of stairs in a subbasement stockroom under a salon in
+      Soho, NYC. My head less than a hundred feet from the regularly rumbling Broadway-Lafayette
+      platform. There was literal sewage running through gutters in the floor covered by steel
+      grating. Rats did occasionally scurry over monitors. I also packed the orders, received
+      deliveries, spoke to customers on the phone, resolved issues, advised them on products. The
+      worst part was dragging two-thousand-pound pallets stacked six feet high over cobblestone.
+    </p>
+
+    <div class="callout">
+      Twenty years ago, if I had been cut a break and been allowed an entry-level position working
+      on a project like The PyPI Place, the company doing the work would have needed a real budget.
+    </div>
+  </section>
+
+  <!-- ── 2006 PRICE TAG ── -->
+  <section id="2006">
+    <div class="section-label">03 — context</div>
+    <h2>What This Would Have Cost in 2006</h2>
+
+    <table class="cost-table">
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Then (2003–2006)</th>
+          <th>Now</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer">Infrastructure</td>
+          <td class="then">Rack unit rental, hosting contracts, T1 line negotiations</td>
+          <td class="now">Oracle Always Free ARM. $0.</td>
+        </tr>
+        <tr>
+          <td class="layer">Mesh networking</td>
+          <td class="then">Build on top of early Tor or I2P (primitive, slow) — or design your own overlay network, which is a PhD-level project</td>
+          <td class="now">Yggdrasil. Self-organizing. Free.</td>
+        </tr>
+        <tr>
+          <td class="layer">Environment isolation</td>
+          <td class="then">Separate physical machines or early VMware (expensive, finicky) — one server per Python version</td>
+          <td class="now">Docker. Ephemeral containers. Free.</td>
+        </tr>
+        <tr>
+          <td class="layer">Verification layer</td>
+          <td class="then">Cryptographic hashing existed but integrating it into an automated pipeline meant writing substantial C or Java</td>
+          <td class="now">Python hashlib. Three lines.</td>
+        </tr>
+        <tr>
+          <td class="layer">Coordination</td>
+          <td class="then">Every architectural decision is a meeting. Every integration problem is a ticket. Every config mistake: a debugging session lasting days.</td>
+          <td class="now">One person. One laptop. One free instance.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout amber">
+      In 2006 this would have been a serious enterprise software contract: distributed package
+      integrity monitoring with cryptographic verification, mesh network delivery, and automated
+      anomaly detection across multiple Python environments. A team of 3–4 engineers. Six to nine
+      months. Java or C++ everywhere. XML config files the size of phone books. A bill somewhere
+      between $400,000 and $1.2 million depending on who was selling it.
+      <br><br>
+      And it still wouldn't have had the mesh part, because that infrastructure didn't exist yet.
+    </div>
+
+    <p>
+      The value of something like The PyPI Place hasn't changed. The cost of building it has
+      collapsed to approximately nothing.
+    </p>
+  </section>
+
+  <!-- ── THE ARGUMENT ── -->
+  <section id="argument">
+    <div class="section-label">04 — argument</div>
+    <h2>The Argument</h2>
+
+    <p>
+      One person with a cheap laptop and a free ARM instance in Oracle's cloud, testing the
+      integrity of an ecosystem containing 760,000 packages — the absurdity of the scale is much
+      of the point.
+    </p>
+
+    <div class="callout">
+      This is performance art: the act of doing it at all, with very little, is the critique. It
+      says: the infrastructure for this has always existed. It was always possible. No institution
+      or well-funded team ever bothered.
+    </div>
+
+    <p>
+      The dissemination is built into the architecture: the dashboard serves live results publicly
+      at zero cost, the data is meant to be scraped and reused, and the explicit invitation is for
+      anyone with a free-tier instance or an idle laptop to run their own node. The more people
+      do it, the more robust the data.
+    </p>
+
+    <h3>The Writing Machine</h3>
+
+    <p>
+      Going forward, the plan is to increase weirdness. Results are published as feeds, read by
+      synthetic presenters, streamed in the glitch-aesthetic terminal voice the project already
+      speaks in — turning dry install logs into a kind of ongoing public performance about the
+      state of the commons.
+    </p>
+
+    <p>
+      A 7B model — the smallest serious model, the one that fits on hardware poor people can
+      actually afford, the one that runs without a GPU — sitting on the same free Oracle instance
+      as the watchdog, watching the test results come in, and writing summaries in the form of
+      play-by-play and color commentary. Not simply generating text: applying logic to a workflow
+      that results in truthful statements. No human curator. Content generated as output of a
+      complex and deliberate machine. No profit motive. A system built only to help and to
+      entertain.
+    </p>
+
+    <p>
+      The writing machine is subject to the same constraints as everything else this project
+      makes: it runs on what's free, it runs on what's small, it runs on what poor people can run.
+    </p>
+
+    <p>
+      And what it writes about is failure. Package after package, environment after environment,
+      the silent accumulating record of things that don't work. The writing machine narrates the
+      broken state of a commons that nobody was watching, in prose generated by the smallest model
+      that can make prose, on infrastructure that costs nothing, for an audience that doesn't exist.
+    </p>
+
+    <div class="callout">
+      The medium is the message and the message is: this was always possible, the tools were always
+      here, and a 7B model on a free ARM instance is now sufficient to create something that
+      contributes in a unique way.
+    </div>
+  </section>
+
+  <!-- ── YGGCRAWL ── -->
+  <section id="yggcrawl">
+    <div class="section-label">05 — mesh</div>
+    <h2>YggCrawl: The People's Internet Layer</h2>
+
+    <p>
+      YggCrawl broadcasts the dataset out over a parallel network that the commercial internet
+      doesn't touch.
+    </p>
+
+    <p>
+      <strong style="color:var(--green)">Yggdrasil</strong> is a self-organizing encrypted IPv6
+      mesh that exists outside the DNS/CDN/corporate routing layer entirely. It runs over ordinary
+      IPv4 transport but operates as an autonomous network — no registrar, no CDN, no billing
+      dispute can take it down.
+    </p>
+
+    <div class="callout amber">
+      The dashboard at sovereignmail.org/pypiplace is the public face.<br>
+      YggCrawl is the version that exists in the commons that can't be taken down.
+    </div>
+
+    <p>
+      The PyPI Place results flowing over Yggdrasil means the data is accessible to people already
+      running their own mesh nodes, already operating outside the default topology. That's the
+      People's Internet argument made concrete at the network layer.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">● ARTIFACT-FIRST DESIGN</div>
+        <p>The system does not care if a process is running. It cares whether
+        <code>current.json</code> and <code>current.json.sha256</code> exist. Everything else
+        is just a means to produce those artifacts.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">● DETERMINISTIC CONVERGENCE</div>
+        <p>Nodes fetch snapshots from peers, verify hash, validate schema, merge
+        deterministically. No trust required. No central coordinator.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">● OPEN REPLICATION</div>
+        <p>Anyone with a free-tier instance can run their own node. The more nodes,
+        the more robust the data. The invitation is explicit and architectural.</p>
+      </div>
+    </div>
+
+    <div class="terminal">
+<span class="comment"># snapshot served at your Yggdrasil IPv6 address</span>
+<span class="prompt">$</span> curl http://[<span class="val">200:xxxx:...</span>]:8080/current.json
+<span class="comment"># verify</span>
+<span class="prompt">$</span> curl http://[<span class="val">200:xxxx:...</span>]:8080/current.json.sha256
+<span class="comment"># compare</span>
+<span class="prompt">$</span> sha256sum current.json
+    </div>
+  </section>
+
+  <!-- ── ARCHITECTURE ── -->
+  <section id="architecture">
+    <div class="section-label">06 — architecture</div>
+    <h2>How It Works</h2>
+
+    <div class="arch-flow"><span style="color:var(--green)">PyPI RSS feed</span>
+      ↓
+<span style="color:var(--amber)">watchdog/rss_poller.py</span>   — fetch new releases
+      ↓
+<span style="color:var(--amber)">watchdog/batch_runner.py</span> — install test × 3 environments → SQLite
+      ↓
+<span style="color:var(--amber)">watchdog/batch_runner.py</span> — emit result records → outbox/
+      ↓
+<span style="color:var(--amber)">yggcrawl/ingest.py</span>       — validate + merge into node index
+      ↓
+<span style="color:var(--amber)">yggcrawl/main.py</span>         — generate snapshot + hash + diff
+      ↓
+<span style="color:var(--amber)">yggcrawl/network.py</span>      — serve over Yggdrasil IPv6 HTTP
+      ↓
+<span style="color:var(--green)">peers</span>                    — fetch / verify / merge / repeat</div>
+
+    <h3>Four-phase testing</h3>
+    <p>Every package runs four phases per environment, with each phase gating the next:</p>
+
+    <div class="terminal">
+<span class="key">phase_download</span>  <span class="comment">pip download --no-deps  (resolution only — does PyPI even have it?)</span>
+<span class="key">phase_nodeps</span>    <span class="comment">pip install --no-deps   (package integrity, no dep graph)</span>
+<span class="key">phase_full</span>      <span class="comment">pip install             (full dependency resolution)</span>
+<span class="key">phase_import</span>    <span class="comment">python -c "import X"    (runtime viability — does it actually work?)</span>
+    </div>
+
+    <h3>Infrastructure</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">ORACLE ARM A1</div>
+        <p>4 OCPU / 24 GB RAM. Watchdog, Docker test runner, writing machine, broadcaster.
+        Always Free tier. $0/month.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">ORACLE x86 MICRO</div>
+        <p>1 OCPU / 1 GB RAM. nginx, static site, RSS feed, YggCrawl node.
+        Always Free tier. $0/month.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">YGGDRASIL MESH</div>
+        <p>Self-organizing IPv6 overlay. Snapshot broadcasting. No hosting contract.
+        No CDN. No single point of failure.</p>
+      </div>
+    </div>
+
+    <h3>Scheduling</h3>
+
+    <div class="terminal">
+<span class="comment"># systemd timers — no cron</span>
+<span class="key">watchdog</span>    <span class="val">*-*-* 00,06,12,18:00:00</span>   <span class="comment">every 6 hours</span>
+<span class="key">writer</span>      <span class="val">*-*-* 20:00:00</span>            <span class="comment">after watchdog completes</span>
+<span class="key">broadcaster</span> <span class="val">*-*-* 22:30:00</span>            <span class="comment">renders for 11pm</span>
+<span class="key">site</span>        <span class="val">*-*-* 23:15:00</span>            <span class="comment">publish episode + RSS</span>
+    </div>
+
+    <div class="callout">
+      Single SQLite database. All components read and write through it. No external APIs at
+      runtime. No cloud services beyond free-tier compute. Everything runs on what's free, what's
+      small, what poor people can run.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    THE PyPI PLACE &nbsp;·&nbsp;
+    <a href="https://sovereignmail.org/pypiplace">sovereignmail.org/pypiplace</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/PregnantPenguins789">github.com/PregnantPenguins789</a>
+  </p>
+  <p style="margin-top:0.75rem;">
+    data is free &nbsp;·&nbsp; infrastructure is free &nbsp;·&nbsp; the point is to do it anyway
+  </p>
+</footer>
+
+</body>
+</html>
