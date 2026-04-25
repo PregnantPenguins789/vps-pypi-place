@@ -852,6 +852,7 @@ def render(d: dict) -> str:
 <footer>
   <div>THE PYPI PLACE &nbsp;·&nbsp; <span class="blink">▮</span> {status_lbl} &nbsp;·&nbsp; DANGEROUSLY EDUCATIONAL</div>
   <div>One person. One Inspiron. Zero dollar data center. &nbsp;·&nbsp;
+    <a href="/pypiplace/about.html">About</a> &nbsp;·&nbsp;
     <a href="https://github.com/PregnantPenguins789/vps-pypi-place">GitHub</a>
   </div>
   <div>generated {d['generated_at']}</div>
