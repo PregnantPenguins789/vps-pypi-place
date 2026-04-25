@@ -25,11 +25,15 @@ OCPUS=2
 RAM_GB=12
 IMAGE_OS="Canonical Ubuntu"
 IMAGE_OS_VERSION="22.04"
-REGION="us-ashburn-1"
+REGION="us-phoenix-1"
 VCN_CIDR="10.0.0.0/16"
 SUBNET_CIDR="10.0.1.0/24"
 VCN_NAME="pypi-place-vcn"
 SUBNET_NAME="pypi-place-subnet"
+
+# If existing VCN/subnet are already provisioned, set these to skip network creation.
+# Found from a previous run: fill in to reuse.
+EXISTING_SUBNET_ID="${EXISTING_SUBNET_ID:-}"
 
 # ─────────────────────────────────────────────
 # HELPERS
@@ -56,95 +60,91 @@ oci iam user get --user-id "$(oci iam user list --query 'data[0].id' --raw-outpu
     --query 'data.name' --raw-output 2>/dev/null || \
     die "OCI CLI not configured. Run: oci setup config"
 
-TENANCY_ID=$(oci iam tenancy get --tenancy-id \
-    "$(oci iam user list --query 'data[0].id' --raw-output | \
-    oci iam user get --user-id /dev/stdin --query 'data."compartment-id"' --raw-output 2>/dev/null)" \
-    --query 'data.id' --raw-output 2>/dev/null || \
-    oci iam compartment list --compartment-id-in-subtree true \
-    --access-level ACCESSIBLE --query 'data[0]."compartment-id"' --raw-output)
+TENANCY_ID=$(oci iam user list --query 'data[0]."compartment-id"' --raw-output 2>/dev/null)
+[ -n "$TENANCY_ID" ] || die "Could not resolve tenancy OCID. Check OCI CLI config."
 
 COMPARTMENT_ID="${COMPARTMENT_ID:-$TENANCY_ID}"
-
 ok "Using compartment: $COMPARTMENT_ID"
 
-# ─────────────────────────────────────────────
-# STEP 1 — VCN
-# ─────────────────────────────────────────────
-
-info "Creating VCN..."
-VCN_ID=$(oci network vcn create \
-    --compartment-id "$COMPARTMENT_ID" \
-    --display-name "$VCN_NAME" \
-    --cidr-block "$VCN_CIDR" \
-    --wait-for-state AVAILABLE \
-    --query 'data.id' --raw-output)
-ok "VCN: $VCN_ID"
+# Switch all subsequent OCI calls to the target region
+export OCI_CLI_REGION="$REGION"
+info "Target region: $REGION"
 
 # ─────────────────────────────────────────────
-# STEP 2 — Internet Gateway
+# STEP 1–5 — VCN / networking (reuse if exists)
 # ─────────────────────────────────────────────
 
-info "Creating internet gateway..."
-IGW_ID=$(oci network internet-gateway create \
-    --compartment-id "$COMPARTMENT_ID" \
-    --vcn-id "$VCN_ID" \
-    --display-name "pypi-place-igw" \
-    --is-enabled true \
-    --wait-for-state AVAILABLE \
-    --query 'data.id' --raw-output)
-ok "Internet gateway: $IGW_ID"
+if [ -n "$EXISTING_SUBNET_ID" ]; then
+    info "Reusing existing subnet: $EXISTING_SUBNET_ID"
+    SUBNET_ID="$EXISTING_SUBNET_ID"
+else
+    info "Looking for existing VCN in $REGION..."
+    VCN_ID=$(oci network vcn list \
+        --compartment-id "$COMPARTMENT_ID" \
+        --query 'data[0].id' --raw-output 2>/dev/null)
 
-# ─────────────────────────────────────────────
-# STEP 3 — Route table
-# ─────────────────────────────────────────────
+    if [ -n "$VCN_ID" ] && [ "$VCN_ID" != "null" ]; then
+        ok "Reusing VCN: $VCN_ID"
+        SUBNET_ID=$(oci network subnet list \
+            --compartment-id "$COMPARTMENT_ID" \
+            --vcn-id "$VCN_ID" \
+            --query 'data[0].id' --raw-output 2>/dev/null)
+        ok "Reusing subnet: $SUBNET_ID"
+    else
+        info "No VCN found — creating network from scratch..."
+        VCN_ID=$(oci network vcn create \
+            --compartment-id "$COMPARTMENT_ID" \
+            --display-name "$VCN_NAME" \
+            --cidr-block "$VCN_CIDR" \
+            --wait-for-state AVAILABLE \
+            --query 'data.id' --raw-output)
+        ok "VCN: $VCN_ID"
 
-info "Updating default route table..."
-RT_ID=$(oci network route-table list \
-    --compartment-id "$COMPARTMENT_ID" \
-    --vcn-id "$VCN_ID" \
-    --query 'data[0].id' --raw-output)
+        IGW_ID=$(oci network internet-gateway create \
+            --compartment-id "$COMPARTMENT_ID" \
+            --vcn-id "$VCN_ID" \
+            --display-name "pypi-place-igw" \
+            --is-enabled true \
+            --wait-for-state AVAILABLE \
+            --query 'data.id' --raw-output)
+        ok "Internet gateway: $IGW_ID"
 
-oci network route-table update \
-    --rt-id "$RT_ID" \
-    --route-rules "[{\"cidrBlock\":\"0.0.0.0/0\",\"networkEntityId\":\"$IGW_ID\"}]" \
-    --force --wait-for-state AVAILABLE > /dev/null
-ok "Route table updated."
+        RT_ID=$(oci network route-table list \
+            --compartment-id "$COMPARTMENT_ID" \
+            --vcn-id "$VCN_ID" \
+            --query 'data[0].id' --raw-output)
+        oci network route-table update \
+            --rt-id "$RT_ID" \
+            --route-rules "[{\"cidrBlock\":\"0.0.0.0/0\",\"networkEntityId\":\"$IGW_ID\"}]" \
+            --force --wait-for-state AVAILABLE > /dev/null
+        ok "Route table updated."
 
-# ─────────────────────────────────────────────
-# STEP 4 — Security list (open SSH + HTTP/S)
-# ─────────────────────────────────────────────
+        SL_ID=$(oci network security-list list \
+            --compartment-id "$COMPARTMENT_ID" \
+            --vcn-id "$VCN_ID" \
+            --query 'data[0].id' --raw-output)
+        oci network security-list update \
+            --security-list-id "$SL_ID" \
+            --ingress-security-rules '[
+                {"protocol":"6","source":"0.0.0.0/0","tcpOptions":{"destinationPortRange":{"min":22,"max":22}},"isStateless":false,"description":"SSH"},
+                {"protocol":"6","source":"0.0.0.0/0","tcpOptions":{"destinationPortRange":{"min":80,"max":80}},"isStateless":false,"description":"HTTP"},
+                {"protocol":"6","source":"0.0.0.0/0","tcpOptions":{"destinationPortRange":{"min":443,"max":443}},"isStateless":false,"description":"HTTPS"}
+            ]' \
+            --force --wait-for-state AVAILABLE > /dev/null
+        ok "Security rules set: SSH, HTTP, HTTPS."
 
-info "Configuring security rules..."
-SL_ID=$(oci network security-list list \
-    --compartment-id "$COMPARTMENT_ID" \
-    --vcn-id "$VCN_ID" \
-    --query 'data[0].id' --raw-output)
-
-oci network security-list update \
-    --security-list-id "$SL_ID" \
-    --ingress-security-rules '[
-        {"protocol":"6","source":"0.0.0.0/0","tcpOptions":{"destinationPortRange":{"min":22,"max":22}},"isStateless":false,"description":"SSH"},
-        {"protocol":"6","source":"0.0.0.0/0","tcpOptions":{"destinationPortRange":{"min":80,"max":80}},"isStateless":false,"description":"HTTP"},
-        {"protocol":"6","source":"0.0.0.0/0","tcpOptions":{"destinationPortRange":{"min":443,"max":443}},"isStateless":false,"description":"HTTPS"}
-    ]' \
-    --force --wait-for-state AVAILABLE > /dev/null
-ok "Security rules set: SSH, HTTP, HTTPS."
-
-# ─────────────────────────────────────────────
-# STEP 5 — Subnet
-# ─────────────────────────────────────────────
-
-info "Creating subnet..."
-SUBNET_ID=$(oci network subnet create \
-    --compartment-id "$COMPARTMENT_ID" \
-    --vcn-id "$VCN_ID" \
-    --display-name "$SUBNET_NAME" \
-    --cidr-block "$SUBNET_CIDR" \
-    --route-table-id "$RT_ID" \
-    --security-list-ids "[\"$SL_ID\"]" \
-    --wait-for-state AVAILABLE \
-    --query 'data.id' --raw-output)
-ok "Subnet: $SUBNET_ID"
+        SUBNET_ID=$(oci network subnet create \
+            --compartment-id "$COMPARTMENT_ID" \
+            --vcn-id "$VCN_ID" \
+            --display-name "$SUBNET_NAME" \
+            --cidr-block "$SUBNET_CIDR" \
+            --route-table-id "$RT_ID" \
+            --security-list-ids "[\"$SL_ID\"]" \
+            --wait-for-state AVAILABLE \
+            --query 'data.id' --raw-output)
+        ok "Subnet: $SUBNET_ID"
+    fi
+fi
 
 # ─────────────────────────────────────────────
 # STEP 6 — Find ARM Ubuntu image
@@ -169,10 +169,10 @@ info "Launching ARM instance (this takes 2-3 minutes)..."
 
 mapfile -t AD_LIST < <(oci iam availability-domain list \
     --compartment-id "$COMPARTMENT_ID" \
-    --query 'data[].name' --raw-output | grep -oP 'Zmma:US-ASHBURN-AD-\d')
+    --query 'data[].name' --raw-output | tr ',' '\n' | grep -oP '\S+AD-\d+')
 
-# Try AD-2 and AD-3 before AD-1 (AD-1 is most saturated)
-SORTED_ADS=($(printf '%s\n' "${AD_LIST[@]}" | sort -t- -k4 -r))
+# Try higher-numbered ADs first (tend to be less saturated)
+SORTED_ADS=($(printf '%s\n' "${AD_LIST[@]}" | sort -t- -k2 -rV))
 
 INSTANCE_ID=""
 for AD in "${SORTED_ADS[@]}"; do
