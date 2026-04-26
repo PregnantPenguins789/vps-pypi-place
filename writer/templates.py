@@ -347,6 +347,19 @@ For you. You are welcome.
 
 [STATIC]\
 """,
+    """\
+We will be right back.
+
+[STATIC]
+
+This portion of The PyPI Place is brought to you by Sovereign Mail. \
+Sovereign Mail: at least we fucking try. \
+What have you done. \
+Available now. Probably won't work. \
+T-shirts also available.
+
+[STATIC]\
+""",
 ]
 
 
