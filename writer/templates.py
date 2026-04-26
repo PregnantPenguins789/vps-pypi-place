@@ -248,12 +248,44 @@ def asymmetries_intro() -> str:
     )
 
 
+def _classify_asymmetry(passing_envs: list, failing_envs: list) -> str:
+    """
+    Derive a spoken asymmetry label from the actual environment names,
+    ignoring the stored asymmetry_type which conflates arch/version splits
+    when all environments share the same arch.
+    """
+    all_envs = passing_envs + failing_envs
+    archs = set()
+    for e in all_envs:
+        if "alpine" in e:
+            archs.add("alpine")
+        elif "arm64" in e or "aarch64" in e:
+            archs.add("arm64")
+        elif "amd64" in e or "x86" in e:
+            archs.add("x86")
+    # If environments differ only by Python version (e.g. 3.9 vs 3.12), say so
+    # Detect by checking if all env names share the same distro suffix
+    suffixes = set()
+    for e in all_envs:
+        short = _env_short(e)
+        # "3.11-slim" → "slim", "3.12-alpine" → "alpine"
+        parts = short.split("-", 1)
+        suffixes.add(parts[1] if len(parts) > 1 else "")
+    if len(suffixes) == 1:
+        return "Python version split"
+    if len(archs) > 1:
+        return "architecture split"
+    return "environment split"
+
+
 def asymmetry(a: dict) -> str:
     name    = a["package"]
     version = a["version"]
-    passing = _env_list(a.get("passing_envs") or [])
-    failing = _env_list(a.get("failing_envs") or [])
-    atype   = (a.get("asymmetry_type") or "env_split").replace("_", " ")
+    passing_envs = a.get("passing_envs") or []
+    failing_envs = a.get("failing_envs") or []
+    passing = _env_list(passing_envs)
+    failing = _env_list(failing_envs)
+    atype   = _classify_asymmetry(passing_envs, failing_envs)
 
     summary = ""
     if a.get("summary"):

@@ -71,11 +71,9 @@ def _collect(conn, hours: int) -> dict:
 
     # ── arch split count (asymmetries in window)
     c.execute(f"""
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT a.release_id)
         FROM asymmetries a
-        JOIN releases r ON r.id = a.release_id
-        JOIN test_results t ON t.release_id = r.id
-        WHERE {since.replace('t.', 't.')}
+        WHERE a.detected_at > datetime('now', '-{max(hours, 24)} hours')
     """)
     overview["arch_split_count"] = (c.fetchone()[0] or 0)
 
