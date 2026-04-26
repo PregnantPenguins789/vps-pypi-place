@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # vps-pypi-place
 
 ## What This Is
@@ -139,6 +143,51 @@ Allowed:
 If a font is wanted, use a system fallback stack. The page must render correctly with
 zero network requests beyond the HTML file itself.
 
+## Dev Commands
+
+All paths below assume local dev at `/home/anonymous/vps-pypi-place/`. On the server the prefix is `/opt/vps-pypi-place/`.
+
+```bash
+# Run the watchdog (poll RSS + test a batch):
+cd /home/anonymous/vps-pypi-place
+PYTHONPATH=. python -m watchdog.run
+
+# Rebuild the static dashboard from an existing DB:
+python site/build.py --db /path/to/pypi_place.db --out /tmp/index.html
+
+# Export test results to yggcrawl outbox (adapter, not report writer):
+PYTHONPATH=. python -m writer.adapter --db /path/to/pypi_place.db --outbox /tmp/outbox
+
+# Kick off a single watchdog run on the server and watch logs:
+ssh ubuntu@129.153.15.163
+sudo systemctl start pypi-watchdog.service
+journalctl -u pypi-watchdog.service -f
+
+# Pull latest code on the server and reload systemd unit:
+git -C /opt/vps-pypi-place pull origin master
+sudo tee /etc/systemd/system/pypi-watchdog.service > /dev/null < /opt/vps-pypi-place/deploy/systemd/pypi-watchdog.service
+sudo systemctl daemon-reload
+```
+
+`config/settings.toml` is the single config source. `watchdog/config.py` loads it via `get("section")`.
+
+`site/build.py` must be run as a script (`python site/build.py`), not as a module — `site` is a stdlib name.
+
 ## Current Status
 
-Project initialized. Schema and foundation in progress.
+**Live and running** — Oracle micro at `129.153.15.163`, proxied through `sovereignmail.org/pypiplace` via Cloudflare Worker.
+
+**Built:**
+- `watchdog/` — RSS poller, four-phase Docker install tester, classifier, SQLite writer. Runs every 6 hours via systemd timer. After each run, `ExecStartPost` fires `site/build.py` to refresh the dashboard.
+- `site/build.py` — static dashboard generator (index.html + about.html). Self-contained HTML, no external resources.
+- `writer/adapter.py` — exports test results as JSON records to a yggcrawl outbox directory. This is a data bridge, not a report writer.
+- `deploy/` — provision and setup scripts, systemd units, Cloudflare Worker for routing.
+- `db/schema.sql` — complete schema including `findings`, `asymmetries`, `package_archetypes`, `report_batches`, `reports`, `episodes`.
+
+**Not yet built (entire broadcaster pipeline):**
+- `broadcaster/pov/` — POV-Ray scene files for the Max Headroom head geometry. Empty.
+- `broadcaster/audio/` — tracker theme (`theme.mod`), TTS assembly scripts. Empty.
+- `broadcaster/compose/` — ffmpeg composition scripts. Empty.
+- Report prose generation — `writer/adapter.py` exports raw data to yggcrawl but nothing reads that outbox and generates written prose yet. The `findings`, `report_batches`, and `reports` tables are populated by schema but no writer fills them.
+
+The DB schema already has everything downstream needs (`findings`, `asymmetries`, `episodes`, `reports`) — the missing work is the software that reads from those tables and produces audio/video output.
