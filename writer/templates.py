@@ -353,10 +353,9 @@ We will be right back.
 [STATIC]
 
 This portion of The PyPI Place is brought to you by Sovereign Mail. \
-Sovereign Mail: at least we fucking try. \
-What have you done. \
-Available now. Probably won't work. \
-T-shirts also available.
+Sovereign Mail: you don't need it and you probably don't want it. \
+You wouldn't even understand it, so why should we bother with you anyways. \
+T-shirts available.
 
 [STATIC]\
 """,
