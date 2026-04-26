@@ -4,8 +4,15 @@ templates.py — Broadcast script sentence templates for The PyPI Place.
 Each function returns a string. Caller (script_builder) supplies the data.
 Templates use no LLM — all deterministic from structured inputs.
 
+PRESENTER: Prez — The PyPI Place Presenter.
 Voice register: flat, bureaucratic, mildly exhausted. The humor is in
 the format, not the words. A machine reporting the news. Every night.
+
+Segments:
+  - commercials: rotating sponsor reads (Sovereign Mail et al.)
+  - prez_psa: "knowing is half the battle" public service announcements
+  - prez_sez: cyber Andy Rooney on acid opinion pieces
+One is selected at random per broadcast for the break slot.
 """
 
 import random
@@ -94,8 +101,12 @@ def opener(date: str, ov: dict) -> str:
         )
 
     return f"""\
-Good evening. The date is {spoken_date}. I am your host. This is The PyPI Place.
+Live from an Oracle ARM instance in Ashburn, Virginia — \
+it's the nightly PyPI Place report. \
+I'm Prez, The PyPI Place Presenter. \
+Brought to you by Sovereign Mail.
 
+The date is {spoken_date}. \
 In the past twenty-four hours, {pt} Python packages were submitted to the index. \
 We tested {bt} of them across multiple environments. \
 {pc} passed. {fc} failed.{phantom_note}
@@ -362,8 +373,123 @@ T-shirts available.
 ]
 
 
+_PREZ_PSA = [
+    """\
+And now, a public service announcement from Prez.
+
+[PREZ PSA]
+
+Did you know that a package can install successfully and still do nothing? \
+This is called a phantom. \
+It is on disk. It is not in Python. \
+If you import it, Python will not answer. \
+Now you know. \
+Knowing is half the battle.
+
+[END PSA]\
+""",
+    """\
+And now, a public service announcement from Prez.
+
+[PREZ PSA]
+
+SPF stands for Sender Policy Framework. \
+It is a DNS record that tells the world which servers are allowed to send email on your behalf. \
+Most people do not have one. \
+Most people do not send their own email. \
+Most people are fine with this. \
+If you are watching this broadcast, you are probably not most people. \
+Now you know. \
+Knowing is half the battle.
+
+[END PSA]\
+""",
+    """\
+And now, a public service announcement from Prez.
+
+[PREZ PSA]
+
+A dependency is a package your package needs in order to work. \
+Your package's dependencies have dependencies. \
+Those dependencies have dependencies. \
+Today's heaviest package brought one hundred and one of them. \
+They are all on disk now. \
+Most of them will never be called. \
+They are just there. \
+Now you know. \
+Knowing is half the battle.
+
+[END PSA]\
+""",
+]
+
+_PREZ_SEZ = [
+    """\
+And now — Prez Sez.
+
+[PREZ SEZ]
+
+I have been thinking about phantom packages. \
+A phantom package installs. pip says success. The files are there. \
+You ask Python if it knows the package. Python says nothing. \
+Not no. Nothing. \
+The package exists in every formal sense and in no practical sense. \
+I find this to be an accurate description of many things. \
+Not just packages. \
+That is all I will say about that.
+
+[END PREZ SEZ]\
+""",
+    """\
+And now — Prez Sez.
+
+[PREZ SEZ]
+
+Someone released a package today called agentirc-cli. \
+Version 8.2.0. \
+Its description reads: legacy alias for culture — install culture instead. \
+It installed. \
+It could not be imported. \
+I have been thinking about this for several hours. \
+A legacy alias for culture. \
+Install culture instead. \
+I do not know what culture is in this context. \
+I do not know if culture installed successfully. \
+I do not know if culture can be imported. \
+We did not test culture. \
+We tested agentirc-cli. \
+agentirc-cli is a phantom. \
+That is what I know.
+
+[END PREZ SEZ]\
+""",
+    """\
+And now — Prez Sez.
+
+[PREZ SEZ]
+
+Every night I test packages. \
+Most of them I have never heard of. \
+Most of them nobody has heard of. \
+They were released today. \
+Someone made them. \
+Someone had a reason. \
+I install them in a Docker container on a free Oracle server. \
+I report the results. \
+Nobody asked me to do this. \
+I am going to keep doing it. \
+I am not sure what that says about me. \
+I am not sure it says anything. \
+Goodnight.
+
+[END PREZ SEZ]\
+""",
+]
+
+
 def commercial() -> str:
-    return random.choice(_COMMERCIALS)
+    pool = _COMMERCIALS + _PREZ_PSA + _PREZ_SEZ
+    return random.choice(pool)
 
 
 def signoff(date: str, ov: dict) -> str:
