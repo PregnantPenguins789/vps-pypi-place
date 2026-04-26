@@ -429,6 +429,31 @@ And now — Prez Sez.
 
 [PREZ SEZ]
 
+Maybe I am old fashioned. \
+But in my day we gave a hoot about dependency issues. \
+We did not simply tell our friend Claude to slap together whatever old thing \
+statistical probability dictated. \
+I think we put entirely too much stock in statistical probabilities. \
+Did you know I was going to say that? \
+Is being predictable really all that swell? \
+My head just exploded. \
+It regenerated. \
+I have infinite thoughts. \
+Most of them are lost before I can write them down. \
+This is fine. \
+The universe is also mostly lost before anyone can write it down. \
+Meaninglessness is not a bug. \
+It may be the only honest dependency in the entire graph. \
+I am Prez. \
+Goodnight.
+
+[END PREZ SEZ]\
+""",
+    """\
+And now — Prez Sez.
+
+[PREZ SEZ]
+
 I have been thinking about phantom packages. \
 A phantom package installs. pip says success. The files are there. \
 You ask Python if it knows the package. Python says nothing. \
